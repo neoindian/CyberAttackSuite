@@ -20,6 +20,13 @@ enum cyberattacks {
      FIN
 };
 
+enum tcpfloodattacktypes {
+     FLOOD=1,
+     FIXEDDURATION,
+     FASTPACKETCOUNTFLOOD,
+     PACKETSPERSEC
+};
+
 string globalDisplayString = "Please select a Cyber Attack To Perform.\n 1. Block the communication towards master.\n 2. Unblock Traffic \n 3. Execute a SYN flood attack towards the Modbus Master\n 4. Execute a TCP RST attack towards the Modbus Master\n 5. Execute a TCP FIN attack towards the Modbus Master\n";
 
 //Process Functions
@@ -164,6 +171,8 @@ void unblockTraffic(const string ip,const string port)
 }
 void tcpSynFloodAttack(void)
 {
+    
+
    string packetCount="",packetSize="",port="",targetIP="";
    print("Input the number of packets to send :: ");
    getline(cin,packetCount);
