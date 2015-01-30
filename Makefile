@@ -1,5 +1,5 @@
 CC      = g++
-CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -DDEBUG=1
+CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -DDEBUG=1 -g
 LDFLAGS = 
 
 all: CyberAttackSuite 
