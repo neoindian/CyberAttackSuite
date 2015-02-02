@@ -1,10 +1,10 @@
 CC      = g++
-CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -DDEBUG=1 -g
+CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -DDEBUG=1 `pkg-config --libs --cflags libmodbus`
 LDFLAGS = 
 
 all: CyberAttackSuite 
 
-octhecdec: CyberAttackSuite.o
+CyberAttackSuite: CyberAttackSuite.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 CyberAttackSuite.o: CyberAttackSuite.cpp 

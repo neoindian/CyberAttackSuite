@@ -2,6 +2,8 @@
 #include<sstream>
 #include<string>
 #include<stdlib.h>
+#include <modbus.h>
+#include <errno.h>
 
 
 using namespace std;
@@ -46,9 +48,13 @@ void inputBlockTrafficParameters(string &ip,string &port);
 void blockTraffic(const string ip,const string port);
 void unblockTraffic(const string ip, const string port);
 
-// TCP flood options
+// TCP flood functions
 void tcpSynFloodAttack(void);
 tcpfloodattacktypes selectTcpSynFloodAttack(void);
+
+//Modbus packet generation function
+void sendModbusPacket(void);
+
 
 int main(int argv,char *argc[])
 {
@@ -278,4 +284,50 @@ tcpfloodattacktypes selectTcpSynFloodAttack(void)
   inputStream >> floodOption;
 
   return (tcpfloodattacktypes)floodOption;
+}
+
+void sendModbusPacket(void)
+{
+  modbus_t *mb;
+  modbus_t *mb2;
+  uint16_t tab_reg[32];
+  std::string modbusSlave=argc[1];
+  //Modbus slave which is a TCP master
+  cout<<modbusSlave<<endl;
+  mb = modbus_new_tcp(modbusSlave.c_str(),502);
+  if (modbus_connect(mb) == -1) {
+               fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+               modbus_free(mb);
+               return -1;
+   }
+
+  mb2 = modbus_new_tcp(modbusSlave.c_str(),501);
+  if (modbus_connect(mb2) == -1) {
+               fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+               modbus_free(mb);
+               return -1;
+   }
+  /* Read 5 registers from the address 0 */
+  //modbus_read_registers(mb, 1, 4, tab_reg);
+
+  //uint8_t raw_req[] = {0x01/*slave id*/, 0x0B/*func code*/, 0x00, 0x01/*ref num*/, 0x00, 0x00/*word count*/ }; 
+  //Request slave id;
+  uint8_t raw_req[] = {0x01/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
+  int req_length = modbus_send_raw_request(mb, raw_req, 8 * sizeof(uint8_t));
+  uint8_t raw_req2[] = {0x01/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
+  //req_length = modbus_send_raw_request(mb2, raw_req2, 8 * sizeof(uint8_t));
+  //uint8_t raw_req3[] = {0x02/*slave id*/, 0x04/*func code*/,0x00,0x00,0x00,0x03}; 
+  //req_length = modbus_send_raw_request(mb2, raw_req3, 6 * sizeof(uint8_t));
+  //req_length = modbus_send_raw_request(mb2, raw_req3, 6 * sizeof(uint8_t));
+  //req_length = modbus_send_raw_request(mb2, raw_req3, 6 * sizeof(uint8_t));
+  uint8_t rsp[MODBUS_TCP_MAX_ADU_LENGTH];
+
+
+  //modbus_receive_confirmation(mb, rsp);
+  
+  modbus_close(mb2);
+  modbus_free(mb2);
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
