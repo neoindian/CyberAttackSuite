@@ -19,7 +19,8 @@ enum cyberattacks {
      UNBLOCK,
      SYNFLOOD,
      RST,
-     FIN
+     MODBUSPKT,
+     FIN //Final enum. Do not modify .
 };
 
 enum tcpfloodattacktypes {
@@ -27,7 +28,7 @@ enum tcpfloodattacktypes {
      FIXEDDURATION,
      FASTPACKETCOUNTFLOOD,
      PACKETSPERSEC,
-     ENDOFENUM
+     ENDOFENUM //Final enum value. Do not modify.
 };
 string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "FIXEDDURATION",
@@ -35,7 +36,7 @@ string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "PACKETSPERSEC",
                                        };
 
-string globalDisplayString = "Please select a Cyber Attack To Perform.\n 1. Block the communication towards master.\n 2. Unblock Traffic \n 3. Execute a SYN flood attack towards the Modbus Master\n 4. Execute a TCP RST attack towards the Modbus Master\n 5. Execute a TCP FIN attack towards the Modbus Master\n";
+string globalDisplayString = "Please select a Cyber Attack To Perform.\n 1. Block the communication towards master.\n 2. Unblock Traffic \n 3. Execute a SYN flood attack towards the Modbus Master\n 4. Execute a TCP RST attack towards the Modbus Master\n 5. Modbus packet send 6. Execute a TCP FIN attack towards the Modbus Master\n ";
 
 //Process Functions
                              
@@ -139,6 +140,10 @@ void processInput(int inputOption)
           break;
        case RST:
           print("RST TRAFFIC"<<endl);
+          break;
+       case MODBUSPKT:
+          print("MODBUS PKT send"<<endl);
+          sendModbusPacket();
           break;
        case FIN:
           print("FIN TRAFFIC"<<endl);
@@ -291,22 +296,33 @@ void sendModbusPacket(void)
   modbus_t *mb;
   modbus_t *mb2;
   uint16_t tab_reg[32];
-  std::string modbusSlave=argc[1];
+  //std::string modbusSlave=argc[1];
+  std::string modbusSlave1,modbusSlave2;
+  int modbusPort1=0,modbusPort2=0;
+  string inputStr="";
+  print("Enter the Modbus Master IP ::");
+  getline(cin,modbusSlave1);
+  print("Enter the Modbus Slave port ::");
+  getline(cin,inputStr);
+  {
+   stringstream inputStream(inputStr);
+   inputStream >> modbusPort1 ;
+  }
   //Modbus slave which is a TCP master
-  cout<<modbusSlave<<endl;
-  mb = modbus_new_tcp(modbusSlave.c_str(),502);
+  cout<<modbusSlave1<<endl;
+  mb = modbus_new_tcp(modbusSlave1.c_str(),modbusPort1);
   if (modbus_connect(mb) == -1) {
-               fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+               print("Connection failed:" << modbus_strerror(errno));
                modbus_free(mb);
-               return -1;
+               return;
    }
-
+  /*
   mb2 = modbus_new_tcp(modbusSlave.c_str(),501);
   if (modbus_connect(mb2) == -1) {
                fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
                modbus_free(mb);
                return -1;
-   }
+   }*/
   /* Read 5 registers from the address 0 */
   //modbus_read_registers(mb, 1, 4, tab_reg);
 
@@ -325,8 +341,8 @@ void sendModbusPacket(void)
 
   //modbus_receive_confirmation(mb, rsp);
   
-  modbus_close(mb2);
-  modbus_free(mb2);
+  //modbus_close(mb2);
+  //modbus_free(mb2);
   modbus_close(mb);
   modbus_free(mb);
 

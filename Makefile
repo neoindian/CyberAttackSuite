@@ -1,6 +1,6 @@
 CC      = g++
-CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -DDEBUG=1 `pkg-config --libs --cflags libmodbus`
-LDFLAGS = 
+CFLAGS  = -I/home/nishant/Desktop/TAMU_Gant_Results/program -I/usr/include/modbus/ -DDEBUG=1 
+LDFLAGS = `pkg-config --libs --cflags libmodbus`
 
 all: CyberAttackSuite 
 
