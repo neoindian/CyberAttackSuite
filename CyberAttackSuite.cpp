@@ -1,9 +1,10 @@
 #include<iostream>
 #include<sstream>
-#include<string>
+#include<string.h>
 #include<stdlib.h>
 #include <modbus.h>
 #include <errno.h>
+#include <stdio.h>
 
 
 using namespace std;
@@ -469,12 +470,124 @@ void  processModbusInput(readModbusTypes floodOption)
 }
 void modbusReadCoilStatus(void)
 {
+  modbus_t *mb;
+  print("Enter Number of bits or coils to read >> ");
+  int nb=0;
+  cin >> nb;
+ 
+  print("Enter the address of remote slave id to read >> ");
+  int addr=0;
+  cin >> addr;
+  uint8_t * dest = (uint8_t *)malloc(nb*sizeof(uint8_t));
+  if(dest)
+     memset(dest,0,nb);
+
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  int ret =0;
+  ret=modbus_read_bits(mb,addr,nb,dest);
+  if(ret>=0)
+  {
+    for (int i=0;i<ret;i++)
+    {
+       cout<<"Status of Coil" << i+1 <<" is "<<*(dest+i)<<endl;
+    }
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusReadInputStatus(void)
 {
+  modbus_t *mb;
+  print("Enter Number of bits or coils to read >> ");
+  int nb=0;
+  cin >> nb;
+ 
+  print("Enter the address of remote slave id to read >> ");
+  int addr=0;
+  cin >> addr;
+  uint8_t * dest = (uint8_t *)malloc(nb*sizeof(uint8_t));
+  if(dest)
+     memset(dest,0,nb);
+
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  int ret =0;
+  ret=modbus_read_input_bits(mb,addr,nb,dest);
+  if(ret>=0)
+  {
+    for (int i=0;i<ret;i++)
+    {
+       cout<<"Status of Coil" << i <<" is "<<*(dest+i)<<endl;
+    }
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusReadHoldingRegisters(void)
 {
+ modbus_t *mb;
+  print("Enter Number of bits or coils to read >> ");
+  int nb=0;
+  cin >> nb;
+ 
+  print("Enter the address of remote slave id to read >> ");
+  int addr=0;
+  cin >> addr;
+  uint16_t tab_reg[64];
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  int ret =0;
+  ret=modbus_read_registers(mb,addr,nb,tab_reg);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  for (int i=0;i<ret;i++)
+  {
+     printf("reg[%d]=%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusReadInputRegisters(void)
 {
