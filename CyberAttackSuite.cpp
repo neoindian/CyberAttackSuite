@@ -552,7 +552,7 @@ void modbusReadInputStatus(void)
 }
 void modbusReadHoldingRegisters(void)
 {
- modbus_t *mb;
+  modbus_t *mb;
   print("Enter Number of bits or coils to read >> ");
   int nb=0;
   cin >> nb;
@@ -591,18 +591,202 @@ void modbusReadHoldingRegisters(void)
 }
 void modbusReadInputRegisters(void)
 {
+  modbus_t *mb;
+  print("Enter Number of bits or coils to read >> ");
+  int nb=0;
+  cin >> nb;
+ 
+  print("Enter the address of remote slave id to read >> ");
+  int addr=0;
+  cin >> addr;
+  uint16_t tab_reg[64];
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  int ret =0;
+  ret=modbus_read_input_registers(mb,addr,nb,tab_reg);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  for (int i=0;i<ret;i++)
+  {
+     printf("reg[%d]=%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
+
 }
 void modbusReportSlaveId(void)
 {
+  modbus_t *mb;
+ 
+  uint8_t tab_reg[64];
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  int ret =0;
+  ret=modbus_report_slave_id(mb,tab_reg);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  if (ret > 1)
+  {
+    printf("Run Status Indicator: %s\n", tab_reg[1] ? "ON" : "OFF");
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusForceSingleCoil(void)
 {
+  modbus_t *mb;
+ 
+  uint8_t tab_reg[64];
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  print("Enter the address of remote slave id to set >> ");
+  int addr=0;
+  cin >> addr;
+  int status=0;
+  print("Enter the status of remote slave id to set [1/0]>> ");
+  cin >> status;
+  int ret =0;
+  ret=modbus_write_bit(mb,addr,status);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  if (ret > 1)
+  {
+    print("Status write was successful"<<endl);
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusForceMultipleCoils(void)
 {
+  modbus_t *mb;
+ 
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  print("Enter the address of remote slave id to set >> ");
+  int addr=0;
+  cin >> addr;
+
+  int nb;
+  print("Enter the address of coils to set >> ");
+  cin >> nb;
+
+  int status=0;
+  print("Enter the status of coil to set [1/0]>> ");
+  cin >> status;
+  uint8_t *src = (uint8_t *)malloc(sizeof(uint8_t)*nb);
+  memset(src,status,nb);
+
+  int ret =0;
+  ret=modbus_write_bits(mb,addr,nb,src);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  if (ret > 1)
+  {
+    print("Status write was successful"<<endl);
+    print("Number of bits written are "<<ret<<endl);
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
 }
 void modbusPresetSingleRegister(void)
 {
+  modbus_t *mb;
+ 
+  uint8_t tab_reg[64];
+  string modbusSlave;
+  int modbusPort=0;
+  print("Enter the Modbus Master IP ::");
+  cin >> modbusSlave;
+  print("Enter the Modbus Slave port ::");
+  cin >> modbusPort ;
+  cout<<modbusSlave<<endl;
+  //Modbus slave which is a TCP master
+  mb = modbus_new_tcp(modbusSlave.c_str(),modbusPort);
+  if (modbus_connect(mb) == -1) {
+               print("Connection failed:" << modbus_strerror(errno));
+               modbus_free(mb);
+               return;
+   }
+  print("Enter the address of remote slave id to set >> ");
+  int addr=0;
+  cin >> addr;
+  int value;
+  print("Enter the value to set on the remote register>> ");
+  cin >> value;
+  int ret =0;
+  ret=modbus_write_register(mb,addr,value);
+  if(ret==-1)
+  {
+     print(modbus_strerror(errno)<<endl);
+  }
+  if (ret > 1)
+  {
+    print("Status write was successful"<<endl);
+  }
+  modbus_close(mb);
+  modbus_free(mb);
+
+
 }
 void modbusPresetMultipleRegisters(void)
 {
