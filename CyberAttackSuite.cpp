@@ -23,7 +23,8 @@ enum cyberattacks {
      SYNFLOOD,
      RST,
      MODBUSPKT,
-     FIN //Final enum. Do not modify .Add new values before this. 
+     FIN ,
+     EXIT//Final enum. Do not modify .Add new values before this. 
 };
 
 enum tcpfloodattacktypes {
@@ -68,12 +69,13 @@ string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "PACKETSPERSEC",
                                        };
 
-string cyberAttackString[FIN]={  "Block Communication towards Master.",
+string cyberAttackString[EXIT]={  "Block Communication towards Master.",
                                  "Unblock Traffic towards Master.",
                                  "Execute SYN attack towards Modbus Master.",
                                  "Execute a TCP RST attack towards Modbus Master.",
 				 "Send a Modbus packet towards Modbus Master. ",
-                                 "Execute a TCP FIN attack towards Modbus Master. "
+                                 "Execute a TCP FIN attack towards Modbus Master. ",
+                                 "Exit the simulation . "
                                 };
                                   
 
@@ -162,9 +164,15 @@ int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
 
 int main(int argv,char *argc[])
 {
-   
-    displayOptions();
-
+    string choice="y";
+    while ((choice.compare("y") == 0) || (choice.compare("Y") == 0))
+    {
+       displayOptions();
+       print("Do you want to continue [y/n] ? ");
+       cin >> choice ;
+    }
+    print("Simulation over. Bye. "<<endl);
+    
     return 0;
 }
 
@@ -202,7 +210,7 @@ void displayOptions(void)
 bool validateInput(int inputOption)
 {
    bool ret=false;
-   if((inputOption < BLOCK) || (inputOption > FIN))
+   if((inputOption < BLOCK) || (inputOption > EXIT))
    {
       print("Input Validation Failed"<<endl);
    }
@@ -251,6 +259,9 @@ void processInput(int inputOption)
        case FIN:
           floodAttacks("F");
           print("FIN TRAFFIC"<<endl);
+          break;
+       case EXIT:
+          print("Exiting the simulation and return to main menu. " <<endl);
           break;
        default:
           break;
@@ -401,7 +412,7 @@ void displayGlobalAttackTypes(void)
   string displayStr="";
   string numstr="";
   int i =0;
-  for( ;i<FIN;i++)
+  for( ;i<EXIT;i++)
   {
     numstr=static_cast<ostringstream *>(&(ostringstream() << (i+1)) )->str();
     displayStr += numstr + "."+cyberAttackString[i]+" \n";
@@ -790,9 +801,11 @@ void modbusPresetSingleRegister(void)
 }
 void modbusPresetMultipleRegisters(void)
 {
+  print("Not Implemented. Please use preset single register ." <<endl);
 }
 void modbusReadWriteRegisters(void)
 {
+  print("Not Implemented." <<endl);
 }
 void sendModbusPacket(void)
 {
