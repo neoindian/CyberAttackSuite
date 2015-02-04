@@ -31,6 +31,37 @@ enum tcpfloodattacktypes {
      PACKETSPERSEC,
      ENDOFENUM //Final enum value. Do not modify.Add new values before this.
 };
+
+enum readModbusTypes {
+     READCOILSTATUS=1,
+     READINPUTSTATUS,
+     READHOLDINGREGS,
+     READINPUTREGS,
+     REPORTSLAVEID,
+     FORCESINGLECOIL,
+     FORCEMULTIPLECOILS,
+     PRESETSINGLEREG,
+     PRESETMULTIREGS,
+     READWRITEREGS,
+     ENDMODBUSTYPE
+};
+
+string readModbusString[ENDMODBUSTYPE-1]= { "Read Single Coil Status",
+                                            "Read Input Status ",
+                                            "Read Holding Register ",
+                                            "Read Input Registers ",
+                                            "Report Slave Id. ",
+                                            "Force Single Coil Write ",
+                                            "Force Multiple Coil Write . ",
+                                            "Preset Single Register . ",
+                                            "Preset Multiple Registers. ",
+                                            "Read Write Registers . "
+};
+ 
+
+
+
+
 string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "FIXEDDURATION",
                                        "PACKETSPERSEC",
@@ -62,8 +93,71 @@ void floodAttacks(const string attackType);
 tcpfloodattacktypes selectFloodAttack(void);
 
 //Modbus packet generation function
+void processModbusInput(readModbusTypes floodOption);
+void displayModbusSendPacketOptions(void);
 void sendModbusPacket(void);
 
+void modbusReadCoilStatus(void);
+void modbusReadInputStatus(void);
+void modbusReadHoldingRegisters(void);
+void modbusReadInputRegisters(void);
+void modbusReportSlaveId(void);
+void modbusForceSingleCoil(void);
+void modbusForceMultipleCoils(void);
+void modbusPresetSingleRegister(void);
+void modbusPresetMultipleRegisters(void);
+void modbusReadWriteRegisters(void);
+
+
+
+//Modbus send and read and write functions defined in modbus library.
+//Function prototypes add here for referencing.
+/*
+
+READ FUNCTION SET
+
+modbus_read_bits - read many bits
+int modbus_read_bits(modbus_t *ctx, int addr, int nb, uint8_t *dest);
+
+modbus_read_input_bits - read many input bits
+int modbus_read_input_bits(modbus_t *ctx, int addr, int nb, uint8_t *dest);
+
+modbus_read_registers - read many registers
+int modbus_read_registers(modbus_t *ctx, int addr, int nb, uint16_t *dest);
+
+modbus_read_input_registers - read many input registers
+int modbus_read_input_registers(modbus_t *ctx, int addr, int nb, uint16_t *dest);
+
+modbus_report_slave_id - returns a description of the controller
+int modbus_report_slave_id(modbus_t *ctx, uint8_t *dest);
+
+*/
+
+/*
+WRITE FUNCTION SET
+
+modbus_write_bit - write a single bit
+int modbus_write_bit(modbus_t *ctx, int addr, int status);
+
+modbus_write_register - write a single register
+int modbus_write_register(modbus_t *ctx, int addr, int value);
+
+modbus_write_bits - write many bits
+int modbus_write_bits(modbus_t *ctx, int addr, int nb, const uint8_t *src);
+
+modbus_write_registers - write many registers
+int modbus_write_registers(modbus_t *ctx, int addr, int nb, const uint16_t *src);
+
+modbus_write_and_read_registers - write and read many registers in a single transaction
+int modbus_write_and_read_registers(modbus_t *ctx, int write_addr, int write_nb, const uint16_t *src, int read_addr, int read_nb, const uint16_t *dest);
+
+modbus_send_raw_request - send a raw request
+int modbus_send_raw_request(modbus_t *ctx, uint8_t *raw_req, int 'raw_req_length);
+
+modbus_receive_confirmation - receive a confirmation request
+int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
+
+*/
 
 int main(int argv,char *argc[])
 {
@@ -147,8 +241,11 @@ void processInput(int inputOption)
           print("RST TRAFFIC"<<endl);
           break;
        case MODBUSPKT:
+          {
           print("MODBUS PKT send"<<endl);
-          sendModbusPacket();
+          displayModbusSendPacketOptions();
+          //sendModbusPacket();
+          }
           break;
        case FIN:
           floodAttacks("F");
@@ -312,6 +409,94 @@ void displayGlobalAttackTypes(void)
 
 }
 
+void displayModbusSendPacketOptions(void)
+{
+  string displayStr="";
+  string numstr="";
+  int i =0;
+  for( ;i<ENDMODBUSTYPE-1;i++)
+  {
+    numstr=static_cast<ostringstream *>(&(ostringstream() << (i+1)))->str();
+    displayStr += numstr + "." + readModbusString[i] +" \n";
+  }
+  print(displayStr<<endl);
+  print("Select the type of attack to carry out :: ");
+  string inputStr="";
+  getline(cin,inputStr);
+  stringstream inputStream(inputStr);
+  int floodOption=-1;
+  inputStream >> floodOption;
+  processModbusInput((readModbusTypes)floodOption);
+}
+void  processModbusInput(readModbusTypes floodOption)
+{
+
+   switch(floodOption)
+   {
+     case READCOILSTATUS:
+      modbusReadCoilStatus();
+      break;
+     case READINPUTSTATUS:
+      modbusReadInputStatus();
+      break;
+     case READHOLDINGREGS:
+      modbusReadHoldingRegisters();
+      break;
+     case READINPUTREGS:
+      modbusReadInputRegisters();
+      break;
+     case REPORTSLAVEID:
+      modbusReportSlaveId();
+      break;
+     case FORCESINGLECOIL:
+      modbusForceSingleCoil();
+      break;
+     case FORCEMULTIPLECOILS:
+      modbusForceMultipleCoils();
+      break;
+     case PRESETSINGLEREG:
+      modbusPresetSingleRegister();
+      break;
+     case PRESETMULTIREGS:
+      modbusPresetMultipleRegisters();
+      break;
+     case READWRITEREGS:
+      modbusReadWriteRegisters();
+      break;
+     deafult:
+      break;
+   }
+}
+void modbusReadCoilStatus(void)
+{
+}
+void modbusReadInputStatus(void)
+{
+}
+void modbusReadHoldingRegisters(void)
+{
+}
+void modbusReadInputRegisters(void)
+{
+}
+void modbusReportSlaveId(void)
+{
+}
+void modbusForceSingleCoil(void)
+{
+}
+void modbusForceMultipleCoils(void)
+{
+}
+void modbusPresetSingleRegister(void)
+{
+}
+void modbusPresetMultipleRegisters(void)
+{
+}
+void modbusReadWriteRegisters(void)
+{
+}
 void sendModbusPacket(void)
 {
   modbus_t *mb;
