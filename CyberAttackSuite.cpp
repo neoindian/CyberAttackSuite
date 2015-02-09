@@ -21,8 +21,11 @@ enum cyberattacks {
      BLOCK=1,
      UNBLOCK,
      SYNFLOOD,
+     SYNACK,
      RST,
+     RSTACK,
      MODBUSPKT,
+     FINACK,
      FIN ,
      EXIT//Final enum. Do not modify .Add new values before this. 
 };
@@ -69,11 +72,14 @@ string floodAttackString[ENDOFENUM-1]={"FLOOD",
                                        "PACKETSPERSEC",
                                        };
 
-string cyberAttackString[EXIT]={  "Block Communication towards Master.",
+string cyberAttackString[EXIT]={ "Block Communication towards Master.",
                                  "Unblock Traffic towards Master.",
-                                 "Execute SYN attack towards Modbus Master.",
+                                 "Execute TCP SYN attack towards Modbus Master.",
+                                 "Execute TCP SYN ACK attack towards Modbus Master.",
                                  "Execute a TCP RST attack towards Modbus Master.",
+                                 "Execute a TCP RST ACK attack towards Modbus Master.",
 				 "Send a Modbus packet towards Modbus Master. ",
+                                 "Execute a TCP FIN ACK attack towards Modbus Master. ",
                                  "Execute a TCP FIN attack towards Modbus Master. ",
                                  "Exit the simulation . "
                                 };
@@ -245,9 +251,17 @@ void processInput(int inputOption)
           print("SYN FLOOD TRAFFIC"<<endl);
           floodAttacks("S");
           break;
+       case SYNACK:
+          print("SYN ACK TRAFFIC"<<endl);
+          floodAttacks("S -A");
+          break;
        case RST:
-          floodAttacks("R");
           print("RST TRAFFIC"<<endl);
+          floodAttacks("R");
+          break;
+       case RSTACK:
+          print("RST ACK TRAFFIC"<<endl);
+          floodAttacks("R -A");
           break;
        case MODBUSPKT:
           {
@@ -255,6 +269,10 @@ void processInput(int inputOption)
           displayModbusSendPacketOptions();
           //sendModbusPacket();
           }
+          break;
+       case FINACK:
+          print("SYN ACK TRAFFIC"<<endl);
+          floodAttacks("F -A");
           break;
        case FIN:
           floodAttacks("F");
